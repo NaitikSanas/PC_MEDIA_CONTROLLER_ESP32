@@ -7,9 +7,23 @@
 #include "driver/gpio.h"
 #include "uCanvas_api.h"
 #include "simple_menu.h"
-
-static const char *TAG = "BController";
 #include "ucanvas_slider.h"
+
+/********* static Defines ***************/
+static const char *TAG = "BController";
+
+
+#define MENU_POSITION_X 5
+#define MENU_POSITION_Y 18
+#define TEXT_OFFSET_X 2
+#define SPAN_X 5
+#define SPAN_Y 10
+
+static selection_menu_obj_t menu_1;
+prompt_t prompt_1;
+
+
+
 /************* TinyUSB descriptors ****************/
 
 #define TUSB_DESC_TOTAL_LEN      (TUD_CONFIG_DESC_LEN + CFG_TUD_HID * TUD_HID_DESC_LEN)
@@ -82,99 +96,6 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 
 /********* Application ***************/
 
-#define MENU_POSITION_X 5
-#define MENU_POSITION_Y 18
-#define TEXT_OFFSET_X 2
-#define SPAN_X 5
-#define SPAN_Y 10
-
-static selection_menu_obj_t menu_1;
-prompt_t prompt_1;
-
-// Define GPIO pins for encoder channels
-#define ENCODER_PIN_A  GPIO_NUM_47  // Example GPIO pin for Channel A
-#define ENCODER_PIN_B  GPIO_NUM_48  // Example GPIO pin for Channel B
-
-typedef enum {
-    ENCODER_DIRECTION_NONE = 0,  // No movement
-    ENCODER_DIRECTION_CW,        // Clockwise
-    ENCODER_DIRECTION_CCW        // Counter-clockwise
-} encoder_direction_t;
-
-// Previous state of the encoder
-static int last_state_a = 0;
-#define DEBOUNCE_DELAY_MS 2  // 5 ms debounce delay
-
-encoder_direction_t read_encoder_direction() {
-    static int stable_state_a = 0;
-    static int stable_state_b = 0;
-    static uint32_t last_debounce_time = 0;
-
-    // Read the raw current levels
-    int raw_state_a = gpio_get_level(ENCODER_PIN_A);
-    int raw_state_b = gpio_get_level(ENCODER_PIN_B);
-
-    // Debounce logic
-    uint32_t now = xTaskGetTickCount() * portTICK_PERIOD_MS; // Current time in ms
-    if ((now - last_debounce_time) > DEBOUNCE_DELAY_MS) {
-        stable_state_a = raw_state_a;
-        stable_state_b = raw_state_b;
-        last_debounce_time = now;
-    }
-
-    encoder_direction_t direction = ENCODER_DIRECTION_NONE;
-
-    if (stable_state_a != last_state_a) {
-        if (stable_state_a == stable_state_b) {
-            direction = ENCODER_DIRECTION_CW;
-        } else {
-            direction = ENCODER_DIRECTION_CCW;
-        }
-    }
-
-    last_state_a = stable_state_a;
-    return direction;
-}
-uint8_t keycode[6] = {0};
-uint8_t event_detect = false;
-uint8_t selector = 0;
-
-static void app_send_hid_demo(void)
-{
-    // Keyboard output: Send key 'a/A' pressed and released
-    if(!gpio_get_level(45)){
-        while (!gpio_get_level(45))
-        {
-            /* code */
-            vTaskDelay(1);
-        }
-        selector = !selector;
-        ESP_LOGI(TAG, " MODE CHANGED"); 
-
-    }
-    encoder_direction_t dir = read_encoder_direction();
-    if( dir == ENCODER_DIRECTION_CCW ){
-        ESP_LOGI(TAG, "ENCODER_DIRECTION_CCW");  
-        if(selector == 0)keycode[0] = HID_KEY_F4;
-        if(selector == 1)keycode[0] = HID_KEY_F6;  
-        event_detect = true;
-    }
-
-    else if( dir == ENCODER_DIRECTION_CW ){
-        ESP_LOGI(TAG, "ENCODER_DIRECTION_CW");  
-        if(selector == 0)keycode[0] = HID_KEY_F3;
-        if(selector == 1)keycode[0] = HID_KEY_F5;       
-        event_detect = true;
-    }
-
-    if(event_detect){
-        ESP_LOGI(TAG, "SENDING EVENT"); 
-        tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
-         vTaskDelay(pdMS_TO_TICKS(50));
-        tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
-        event_detect = false;
-    }
-}
 void create_menu_1_instace(void);
 void app_main(void)
 {
@@ -224,19 +145,12 @@ void app_main(void)
 
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
     ESP_LOGI(TAG, "USB initialization DONE");
-
+    //Here We start making UI and do Event Handling 
     start_uCanvas_engine();
     uCanvas_Scene_t* scene = New_uCanvas_Scene();
     uCanvas_set_active_scene(scene);
-    // New_uCanvas_2DRectangle(0,0,64,64);
     create_menu_1_instace();
     while (1) {
-        // if (tud_mounted()) {
-        //     static bool send_hid_data = true;
-            
-        //     app_send_hid_demo();
-        
-        // }
         vTaskDelay(1);
     }
 }
@@ -438,3 +352,6 @@ void create_menu_1_instace(void){
     create_slider(&slider);
     set_slider_visiblity(&slider,INVISIBLE);
 }
+
+
+
