@@ -6,3 +6,4 @@
 #include "class/hid/hid_device.h"
 
 void usb_hid_setup();
+void usb_hid_send_key_stroke(uint8_t*keycode);

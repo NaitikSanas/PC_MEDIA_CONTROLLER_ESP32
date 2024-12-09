@@ -93,17 +93,13 @@ void slider_cb(void){
         if(cur_slider_pos - last_slider_value == 4){
             uint8_t keycode[6] = {HID_KEY_F6};
             b1 = cur_slider_pos;
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
-            vTaskDelay(pdMS_TO_TICKS(50));
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
+            usb_hid_send_key_stroke(keycode);
         }
 
         if(cur_slider_pos - last_slider_value == -4){
             b1 = cur_slider_pos;
             uint8_t keycode[6] = {HID_KEY_F5};
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
-            vTaskDelay(pdMS_TO_TICKS(50));
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
+            usb_hid_send_key_stroke(keycode);
         }
     }
     //At Index 0 there is M2 - Brightness Control
@@ -111,17 +107,13 @@ void slider_cb(void){
         if(cur_slider_pos - last_slider_value == 4){
             uint8_t keycode[6] = {HID_KEY_F4};
             b2 = cur_slider_pos;
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
-            vTaskDelay(pdMS_TO_TICKS(50));
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
+            usb_hid_send_key_stroke(keycode);
         }
 
         if(cur_slider_pos - last_slider_value == -4){
             b2 = cur_slider_pos;
             uint8_t keycode[6] = {HID_KEY_F3};
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
-            vTaskDelay(pdMS_TO_TICKS(50));
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
+            usb_hid_send_key_stroke(keycode);
         }
     }
     //At Index 2 there is Volume Control
@@ -130,18 +122,14 @@ void slider_cb(void){
             printf("vol-up\r\n");
             uint8_t keycode[6] = { HID_KEY_F1};
             vol_level = cur_slider_pos;
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
-            vTaskDelay(pdMS_TO_TICKS(50));
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
+            usb_hid_send_key_stroke(keycode);
         }
 
         if(cur_slider_pos - last_slider_value == -2){
             printf("vol-down\r\n");
             vol_level = cur_slider_pos;
             uint8_t keycode[6] = {HID_KEY_F2};
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
-            vTaskDelay(pdMS_TO_TICKS(50));
-            tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
+            usb_hid_send_key_stroke(keycode);
         }
     }
     last_slider_value = slider.slider_value;

@@ -91,3 +91,9 @@ void usb_hid_setup(){
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
     ESP_LOGI(TAG, "USB initialization DONE");
 }
+
+void usb_hid_send_key_stroke(uint8_t*keycode){
+    tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
+    vTaskDelay(pdMS_TO_TICKS(50));
+    tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
+}
