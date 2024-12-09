@@ -61,7 +61,10 @@ static uint8_t selector_icon[9*9] = {   \
 };
 
 slider_t slider;
-
+/*
+    When OK button is pressed when Slider is in ACTIVE State, We exit the prompt by setting menu_1 
+    in ACTIVE State and store hide the slider and prompt object.
+*/
 void slider_pb_cb(void){
     menu_1.is_active = true;
     if(menu_get_current_index(&menu_1)==2){
@@ -72,14 +75,20 @@ void slider_pb_cb(void){
     slider.is_active = false;
 }
 
-float last_slider_value = 0.0;
-float b1 = 0.0;
-float b2 = 0.0;
-float vol_level = 0.0;
+float last_slider_value = 0.0; //Last Value of slider to detect change
+float b1 = 0.0; //Slider Value of Monitor 1 Brightness
+float b2 = 0.0; //Slider Value of Monitor 2 Brightness
+float vol_level = 0.0; //Slider Value of Volume
+
+/*
+    Based on menu_get_current_index(&menu_1), We configure slider to send the brightness UP/DOWN and 
+    Volume UP/Down Command.
+*/
 void slider_cb(void){
     float cur_slider_pos = slider.slider_value;
     printf("slider_value %f\r\n",cur_slider_pos);
     uint8_t index = menu_get_current_index(&menu_1);
+    //At Index 0 there is M1 - Brightness Control
     if(index == 0){
         if(cur_slider_pos - last_slider_value == 4){
             uint8_t keycode[6] = {HID_KEY_F6};
@@ -97,6 +106,7 @@ void slider_cb(void){
             tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
         }
     }
+    //At Index 0 there is M2 - Brightness Control
     if(index == 1){
         if(cur_slider_pos - last_slider_value == 4){
             uint8_t keycode[6] = {HID_KEY_F4};
@@ -114,7 +124,7 @@ void slider_cb(void){
             tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, NULL);
         }
     }
-
+    //At Index 2 there is Volume Control
     if(index == 2){
         if(cur_slider_pos - last_slider_value == 2){
             printf("vol-up\r\n");
@@ -136,7 +146,13 @@ void slider_cb(void){
     }
     last_slider_value = slider.slider_value;
 }
-
+/*
+    This Event handler controls main menu navigation, Upon Item click, 
+    We get index at which click event occured, we use this to show slider prompt on screen.
+    Before we show it one screen we configure slider position based on item it's clicked on,
+    Keep in mind we using same slider object all menu items. so we need to restore it's state 
+    based on item clicked. 
+ */
 void onItemClicked_Menu_1(void){
     printf("clicked\r\n");
     if(menu_get_current_index(&menu_1)==0){
