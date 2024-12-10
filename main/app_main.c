@@ -20,12 +20,12 @@ static const char *TAG = "BController";
 #define SPAN_X 5
 #define SPAN_Y 10
 
-static selection_menu_obj_t menu_1;
+static selection_menu_obj_t main_menu;
 prompt_t prompt_1;
 
 /********* Application ***************/
 
-void create_menu_1_instace(void);
+void create_main_menu_instace(void);
 void app_main(void)
 {
     usb_hid_setup();
@@ -39,7 +39,7 @@ void app_main(void)
     uCanvas_Init_PushButton(48);
     uCanvas_Init_PushButton(45);
 
-    create_menu_1_instace();
+    create_main_menu_instace();
     while (1) {
         vTaskDelay(1);
     }
@@ -62,12 +62,12 @@ static uint8_t selector_icon[9*9] = {   \
 
 slider_t slider;
 /*
-    When OK button is pressed when Slider is in ACTIVE State, We exit the prompt by setting menu_1 
+    When OK button is pressed when Slider is in ACTIVE State, We exit the prompt by setting main_menu 
     in ACTIVE State and store hide the slider and prompt object.
 */
 void slider_pb_cb(void){
-    menu_1.is_active = true;
-    if(menu_get_current_index(&menu_1)==2){
+    main_menu.is_active = true;
+    if(menu_get_current_index(&main_menu)==2){
         slider.slider_step = 4;
     }
     set_slider_visiblity(&slider,INVISIBLE);
@@ -81,13 +81,13 @@ float b2 = 0.0; //Slider Value of Monitor 2 Brightness
 float vol_level = 0.0; //Slider Value of Volume
 
 /*
-    Based on menu_get_current_index(&menu_1), We configure slider to send the brightness UP/DOWN and 
+    Based on menu_get_current_index(&main_menu), We configure slider to send the brightness UP/DOWN and 
     Volume UP/Down Command.
 */
 void slider_cb(void){
     float cur_slider_pos = slider.slider_value;
     printf("slider_value %f\r\n",cur_slider_pos);
-    uint8_t index = menu_get_current_index(&menu_1);
+    uint8_t index = menu_get_current_index(&main_menu);
     //At Index 0 there is M1 - Brightness Control
     if(index == 0){
         if(cur_slider_pos - last_slider_value == 4){
@@ -141,26 +141,26 @@ void slider_cb(void){
     Keep in mind we using same slider object all menu items. so we need to restore it's state 
     based on item clicked. 
  */
-void onItemClicked_Menu_1(void){
+void onItemClicked_main_menu(void){
     printf("clicked\r\n");
-    if(menu_get_current_index(&menu_1)==0){
-        menu_1.is_active = false;
+    if(menu_get_current_index(&main_menu)==0){
+        main_menu.is_active = false;
         show_prompt(&prompt_1);
         set_slider_position(&slider,b1);
         set_slider_visiblity(&slider,VISIBLE);
         slider.is_active = true;
     }
 
-    if(menu_get_current_index(&menu_1)==1){
-        menu_1.is_active = false;
+    if(menu_get_current_index(&main_menu)==1){
+        main_menu.is_active = false;
         show_prompt(&prompt_1);
         set_slider_position(&slider,b2);
         set_slider_visiblity(&slider,VISIBLE);
         slider.is_active = true;
     }
 
-    if(menu_get_current_index(&menu_1)==2){
-        menu_1.is_active = false;
+    if(menu_get_current_index(&main_menu)==2){
+        main_menu.is_active = false;
         show_prompt(&prompt_1);
         slider.slider_step = 2;
         set_slider_position(&slider,vol_level); 
@@ -169,28 +169,28 @@ void onItemClicked_Menu_1(void){
     }
 }
 
-void onScrollUp_Menu_1(void){
-    printf("[Event]:Scroll-Up : idx %d\r\n",menu_get_current_index(&menu_1));
+void onScrollUp_main_menu(void){
+    printf("[Event]:Scroll-Up : idx %d\r\n",menu_get_current_index(&main_menu));
 }
-void onScrollDown_Menu_1(void){
-    printf("[Event]:Scroll-Down : idx %d\r\n",menu_get_current_index(&menu_1));  
+void onScrollDown_main_menu(void){
+    printf("[Event]:Scroll-Down : idx %d\r\n",menu_get_current_index(&main_menu));  
 }
 
-void create_menu_1_instace(void){
-    menu_1.menu_position_x = MENU_POSITION_X;
-    menu_1.menu_position_y = MENU_POSITION_Y;
-    menu_1.span_x = SPAN_X;
-    menu_1.span_y = SPAN_Y;
-    menu_1.text_offset_x = 20;
+void create_main_menu_instace(void){
+    main_menu.menu_position_x = MENU_POSITION_X;
+    main_menu.menu_position_y = MENU_POSITION_Y;
+    main_menu.span_x = SPAN_X;
+    main_menu.span_y = SPAN_Y;
+    main_menu.text_offset_x = 20;
 
-    menu_1.click_handler        = onItemClicked_Menu_1; //This function will be called when select button is pressed
-    menu_1.scroll_up_handler    = onScrollUp_Menu_1;
-    menu_1.scroll_down_handler  = onScrollDown_Menu_1;
-    menu_1.select_btn_wait_to_release = true;
+    main_menu.click_handler        = onItemClicked_main_menu; //This function will be called when select button is pressed
+    main_menu.scroll_up_handler    = onScrollUp_main_menu;
+    main_menu.scroll_down_handler  = onScrollDown_main_menu;
+    main_menu.select_btn_wait_to_release = true;
 
-    menu_set_active_elements(&menu_1,32); //Set Active Members of menu object
-    menu_set_enable_cursor_index_text(&menu_1,true);//shows cursor position in corner
-    menu_add_gpio_control(&menu_1,47,48,45); //Add GPIO to control UP/DOWN/SELECT navigation
+    menu_set_active_elements(&main_menu,32); //Set Active Members of menu object
+    menu_set_enable_cursor_index_text(&main_menu,true);//shows cursor position in corner
+    menu_add_gpio_control(&main_menu,47,48,45); //Add GPIO to control UP/DOWN/SELECT navigation
     
     /*
         The selector or cursor can be any object like sprite, rectangle, circle etc.
@@ -200,21 +200,21 @@ void create_menu_1_instace(void){
     ui_selector = New_uCanvas_2DSprite(selector_sprite, MENU_POSITION_X,MENU_POSITION_Y);  
 
     /*Instantiate Menu Object*/
-    create_menu(&menu_1,ui_selector);
+    create_menu(&main_menu,ui_selector);
     
-    menu_set_title(&menu_1,"< PC Control Panel >"   ,20,0);
+    menu_set_title(&main_menu,"< PC Control Panel >"   ,20,0);
     
     New_uCanvas_2DLine(0,MENU_POSITION_Y-8,128,MENU_POSITION_Y-8);
     New_uCanvas_2DLine(0,MENU_POSITION_Y-7,128,MENU_POSITION_Y-7);
 
     /* Add Content in your menu object */
-    menu_set_content(&menu_1,"M1 Brightness",0);
-    menu_set_content(&menu_1,"M2 Brightness",1);
-    menu_set_content(&menu_1,"Volume"       ,2);
-    menu_set_content(&menu_1,"Source"       ,3);
-    menu_set_content(&menu_1,"Next-Page"    ,4);
+    menu_set_content(&main_menu,"M1 Brightness",0);
+    menu_set_content(&main_menu,"M2 Brightness",1);
+    menu_set_content(&main_menu,"Volume"       ,2);
+    menu_set_content(&main_menu,"Source"       ,3);
+    menu_set_content(&main_menu,"Next-Page"    ,4);
     
-    menu_1.is_active = true;
+    main_menu.is_active = true;
     prompt_1.box_h = 32;
     prompt_1.box_w = 100;
     prompt_1.prompt_position_x = 10;
